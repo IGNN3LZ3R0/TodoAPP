@@ -1,9 +1,10 @@
-import {Todo, CreateTodoDTO, UpdateTodoDTO} from '../entities/Todo';
-
+// 🟢 CONTRATO: Define QUÉ operaciones existen, no CÓMO se implementan
+// Esta es la clave de Clean Architecture
+import { Todo, CreateTodoDTO, UpdateTodoDTO } from "../entities/Todo"; 
 export interface TodoRepository {
-    getAll(): Promise<Todo[]>;
+    getAll(userId: string): Promise<Todo[]>;// ← MODIFICADO: filtrar por userId
     getById(id: string): Promise<Todo | null>;
-    create(data: CreateTodoDTO): Promise<Todo>;
-    update(data: UpdateTodoDTO): Promise<Todo>;
+    create(todo: CreateTodoDTO): Promise<Todo>; // ← Ahora CreateTodoDTO incluye userId
+    update(todo: UpdateTodoDTO): Promise<Todo>; 
     delete(id: string): Promise<void>;
 }

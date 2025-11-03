@@ -1,10 +1,16 @@
+// 🟢 USE CASE: Lógica de negocio específica
+// Orquesta operaciones pero no conoce la implementación
+
 import { Todo } from "../entities/Todo";
-import { TodoRepository } from "../repositories/Todorepository";
+import { TodoRepository } from "@/src/domain/repositories/Todorepository";
 
 export class GetAllTodos {
     constructor(private repository: TodoRepository) {}
-
-    async execute(): Promise<Todo[]> {
-        return await this.repository.getAll();
+    async execute(userId: string): Promise<Todo[]> {
+        // ← NUEVO: Validar que userId esté presente
+        if (!userId) {
+            throw new Error("User ID is required");
+        }
+    return await this.repository.getAll(userId);
     }
 }
