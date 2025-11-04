@@ -71,6 +71,43 @@ export const useAuth = () => {
     }
   };
 
+  const updateProfile = async (displayName: string): Promise<boolean> => {
+    if (!user) {
+      setError("No hay usuario autenticado");
+      return false;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedUser = await container.updateProfile.execute(
+        user.id,
+        displayName
+      );
+      setUser(updatedUser);
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (email: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await container.resetPassword.execute(email);
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     loading,
@@ -78,6 +115,8 @@ export const useAuth = () => {
     register,
     login,
     logout,
+    updateProfile,
+    resetPassword,
     isAuthenticated: !!user,
   };
 };

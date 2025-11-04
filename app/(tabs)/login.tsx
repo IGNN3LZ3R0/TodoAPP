@@ -33,6 +33,10 @@ export default function LoginScreen() {
         router.push("/(tabs)/register");
     };
 
+    const goToForgotPassword = () => {
+        router.push("/(tabs)/forgot-password");
+    };
+
     return (
         <KeyboardAvoidingView
             style={styles.container}
@@ -74,6 +78,15 @@ export default function LoginScreen() {
                         ) : (
                             <Text style={styles.buttonText}>Entrar</Text>
                         )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        onPress={goToForgotPassword} 
+                        style={styles.forgotPasswordButton}
+                    >
+                        <Text style={styles.forgotPasswordText}>
+                            ¿Olvidaste tu contraseña?
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={goToRegister} style={styles.linkButton}>
@@ -136,6 +149,16 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 18,
         fontWeight: "bold",
+    },
+    forgotPasswordButton: {
+        marginTop: 15,
+        padding: 5,
+        alignItems: "center",
+    },
+    forgotPasswordText: {
+        color: "#FF9500",
+        fontSize: 14,
+        fontWeight: "600",
     },
     linkButton: {
         marginTop: 20,

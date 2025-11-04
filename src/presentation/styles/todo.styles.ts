@@ -137,6 +137,11 @@ export const createStyles = (theme: TodosTheme) =>
       backgroundColor: "#007AFF",
       marginBottom: 10,
     },
+    profileButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    },
     userAvatarPlaceholder: {
       width: 40,
       height: 40,

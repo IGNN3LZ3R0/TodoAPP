@@ -1,5 +1,4 @@
-// 🟢 NUEVA VERSION: UI completamente desacoplada de la base de datos
-import { useAuth } from "@/src/presentation/hooks/useAuth"; 
+import { useAuth } from "@/src/presentation/hooks/useAuth";
 import { useRouter } from "expo-router";
 import { useTodos } from "@/src/presentation/hooks/useTodos";
 import { createStyles, defaultLightTheme, defaultDarkTheme } from "@/src/presentation/styles/todo.styles";
@@ -7,6 +6,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import React, { useState, useMemo } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Text,
   TextInput,
@@ -14,14 +14,9 @@ import {
   View,
 } from "react-native";
 
-// 🟢 BENEFICIO: Este componente NO SABE si usamos SQLite, Firebase, o una API
-// Solo sabe que puede llamar a addTodo, toggleTodo, deleteTodo
-
 export default function TodosScreenClean() {
   const [inputText, setInputText] = useState("");
   const { todos, loading, addTodo, toggleTodo, deleteTodo } = useTodos();
-
-  // ← NUEVAS LÍNEAS
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -32,12 +27,28 @@ export default function TodosScreenClean() {
     [colorScheme]
   );
 
-  // ← NUEVA FUNCIÓN
   const handleLogout = async () => {
-    const success = await logout();
-    if (success) {
-      router.replace("/(tabs)/login");
-    }
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Estás seguro que quieres cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Cerrar Sesión",
+          style: "destructive",
+          onPress: async () => {
+            const success = await logout();
+            if (success) {
+              router.replace("/(tabs)/login");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const goToProfile = () => {
+    router.push("/(tabs)/profile");
   };
 
   const handleAddTodo = async () => {
@@ -47,6 +58,21 @@ export default function TodosScreenClean() {
     if (success) {
       setInputText("");
     }
+  };
+
+  const handleDeleteTodo = (id: string, title: string) => {
+    Alert.alert(
+      "Confirmar eliminación",
+      `¿Estás seguro que deseas eliminar "${title}"?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => deleteTodo(id),
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -83,7 +109,7 @@ export default function TodosScreenClean() {
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => deleteTodo(item.id)}
+        onPress={() => handleDeleteTodo(item.id, item.title)}
         style={styles.deleteButton}
       >
         <Text style={styles.deleteButtonText}>🗑️</Text>
@@ -93,20 +119,25 @@ export default function TodosScreenClean() {
 
   return (
     <View style={styles.container}>
-      {/* NUEVO HEADER CON INFO DE USUARIO */}
+      {/* HEADER CON INFO DE USUARIO */}
       <View style={styles.header}>
-        <View style={styles.userAvatarPlaceholder}>
-          <Text style={styles.userAvatarText}>
-            {user?.displayName?.charAt(0) || "U"}
-          </Text>
-        </View>
-        <Text style={styles.userName}>{user?.displayName || "Usuario"}</Text>
+        <TouchableOpacity 
+          onPress={goToProfile}
+          style={styles.profileButton}
+        >
+          <View style={styles.userAvatarPlaceholder}>
+            <Text style={styles.userAvatarText}>
+              {user?.displayName?.charAt(0) || "U"}
+            </Text>
+          </View>
+          <Text style={styles.userName}>{user?.displayName || "Usuario"}</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Text style={styles.logoutText}>Salir</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.title}>Mis Tareas (Clean)</Text>
+      <Text style={styles.title}>Mis Tareas</Text>
 
       <View style={styles.inputContainer}>
         <TextInput

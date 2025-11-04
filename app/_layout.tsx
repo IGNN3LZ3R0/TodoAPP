@@ -1,68 +1,83 @@
-import { DarkTheme, DefaultTheme, ThemeProvider,
-} from "@react-navigation/native"; import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router"; import * as SplashScreen from "expo-splash-screen";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack, useRouter, useSegments } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native"; import "react-native-reanimated";
+import { ActivityIndicator, View } from "react-native";
+import "react-native-reanimated";
 
-import { useColorScheme } from "@/hooks/use-color-scheme"; import { container } from "@/src/di/container";
-import { useAuth } from "@/src/presentation/hooks/useAuth"; // ← NUEVO
-SplashScreen.preventAutoHideAsync(); export default function RootLayout() {
-const colorScheme = useColorScheme(); const [loaded] = useFonts({
-SpaceMono: require("@/assets/fonts/SpaceMono-BoldItalic.ttf"),
-});
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { container } from "@/src/di/container";
+import { useAuth } from "@/src/presentation/hooks/useAuth";
 
-const [containerReady, setContainerReady] = useState(false); const { user, loading: authLoading } = useAuth(); // ← NUEVO 
+SplashScreen.preventAutoHideAsync();
 
-const segments = useSegments(); // ← NUEVO
- 
-const router = useRouter(); // ← NUEVO
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    SpaceMono: require("@/assets/fonts/SpaceMono-BoldItalic.ttf"),
+  });
 
-useEffect(() => {
-const initContainer = async () => { try {
-await container.initialize(); setContainerReady(true);
-} catch (error) {
-console.error("Error initializing container:", error);
-}
-};
+  const [containerReady, setContainerReady] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-initContainer();
-}, []);
+  useEffect(() => {
+    const initContainer = async () => {
+      try {
+        await container.initialize();
+        setContainerReady(true);
+      } catch (error) {
+        console.error("Error initializing container:", error);
+      }
+    };
 
-// ← NUEVO: Protección de rutas
-useEffect(() => {
-if (!containerReady || authLoading) return;
+    initContainer();
+  }, []);
 
-const inAuthGroup = segments[0] === "(tabs)" && (segments[1] === "login" || segments[1] === "register");
+  // 🔒 Protección de rutas
+  useEffect(() => {
+    if (!containerReady || authLoading) return;
 
-if (!user && !inAuthGroup) {
-// Usuario no autenticado intenta acceder a ruta protegida 
-router.replace("/(tabs)/login");
-} else if (user && inAuthGroup) {
-// Usuario autenticado intenta acceder a login/register 
-router.replace("/(tabs)/todos");
-}
-}, [user, segments, containerReady, authLoading]);
+    const inAuthGroup =
+      segments[0] === "(tabs)" &&
+      (segments[1] === "login" || 
+       segments[1] === "register" || 
+       segments[1] === "forgot-password");
 
-useEffect(() => {
-if (loaded && containerReady && !authLoading) { SplashScreen.hideAsync();
-}
-}, [loaded, containerReady, authLoading]);
+    if (!user && !inAuthGroup) {
+      // Usuario no autenticado intenta acceder a ruta protegida
+      router.replace("/(tabs)/login");
+    } else if (user && inAuthGroup) {
+      // Usuario autenticado intenta acceder a login/register/forgot-password
+      router.replace("/(tabs)/todos");
+    }
+  }, [user, segments, containerReady, authLoading]);
 
-if (!loaded || !containerReady || authLoading) { return (
-<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-<ActivityIndicator size="large" />
-</View>
-);
-}
+  useEffect(() => {
+    if (loaded && containerReady && !authLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, containerReady, authLoading]);
 
-return (
-<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-<Stack screenOptions={{ headerShown: false }}>
-<Stack.Screen name="(tabs)/login" />
-<Stack.Screen name="(tabs)/register" />
-<Stack.Screen name="(tabs)/todos" />
- 
-</Stack>
-</ThemeProvider>
-);
+  if (!loaded || !containerReady || authLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)/login" />
+        <Stack.Screen name="(tabs)/register" />
+        <Stack.Screen name="(tabs)/forgot-password" />
+        <Stack.Screen name="(tabs)/todos" />
+        <Stack.Screen name="(tabs)/profile" />
+      </Stack>
+    </ThemeProvider>
+  );
 }
